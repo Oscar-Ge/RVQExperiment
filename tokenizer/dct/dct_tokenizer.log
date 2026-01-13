@@ -1,0 +1,149 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+WARNING:robosuite_logs:No private macro file found!
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+WARNING:robosuite_logs:It is recommended to use a private macro file
+[robosuite WARNING] To setup, run: python /venv/main/lib/python3.12/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+WARNING:robosuite_logs:To setup, run: python /venv/main/lib/python3.12/site-packages/robosuite/scripts/setup_macros.py
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+================================================================================
+π0-FAST DCT COMPRESSION ANALYSIS
+================================================================================
+================================================================================
+COLLECTING π0.5 ACTIONS ON LIBERO
+================================================================================
+
+[1/4] Loading π0.5 policy...
+✓ PyTorch checkpoint already exists: /root/.cache/openpi/converted_checkpoints/pi05_libero_pytorch
+  Use --force_conversion to re-convert
+
+Loading pi05-libero policy from: /root/.cache/openpi/converted_checkpoints/pi05_libero_pytorch
+Creating policy with pi05_libero configuration...
+/venv/main/lib/python3.12/site-packages/torch/jit/_script.py:365: DeprecationWarning: `torch.jit.script_method` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+✓ Policy loaded successfully!
+
+GPU Memory Usage:
+  Allocated: 7.49 GB
+  Reserved: 7.52 GB
+
+[2/4] Loading LIBERO task: libero_spatial - Task 0
+[info] using task orders [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+[Warning]: datasets path /workspace/basic-run/LIBERO/libero/libero/../datasets does not exist!
+  Task: pick_up_the_black_bowl_between_the_plate_and_the_ramekin_and_place_it_on_the_plate
+  Description: pick up the black bowl between the plate and the ramekin and place it on the plate
+  Initial states: 50
+
+[3/4] Creating LIBERO environment...
+[Warning]: datasets path /workspace/basic-run/LIBERO/libero/libero/../datasets does not exist!
+
+[4/4] Collecting actions from 5 episodes...
+/venv/main/lib/python3.12/site-packages/torch/_dynamo/variables/functions.py:2033: UserWarning: Dynamo does not know how to trace the builtin `builtins.__build_class__.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).
+If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.
+If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.
+  torch._dynamo.utils.warn_once(explanation + "\n" + "\n".join(hints))
+
+  [DEBUG] First action_chunk shape: (10, 7)
+  [DEBUG] action_chunk dtype: float64
+  [DEBUG] action_chunk type: <class 'numpy.ndarray'>
+  Episode 1/5: ✅ (steps: 88)
+  Episode 2/5: ✅ (steps: 138)
+  Episode 3/5: ✅ (steps: 90)
+  Episode 4/5: ✅ (steps: 88)
+  Episode 5/5: ✅ (steps: 83)
+
+✅ Collected 437 action chunks
+   Success rate: 100.0%
+   Avg episode length: 97.4 steps
+Detected action chunk size: 10 (from policy output)
+
+================================================================================
+ANALYZING COMPRESSION WITH DIFFERENT SETTINGS
+================================================================================
+Fitted tokenizer on 4370 actions
+  Action range: [-1.0100, 1.0151]
+  DCT Coeff range: [-3.2526, 3.2336]
+  → DC component is NOT in [-1, 1]! (This was the bug)
+
+DCT keep= 2:
+  MSE: 0.013931 ± 0.021298
+  Tokens: 14.0
+  Compression: 5.00x
+Fitted tokenizer on 4370 actions
+  Action range: [-1.0100, 1.0151]
+  DCT Coeff range: [-3.2526, 3.2336]
+  → DC component is NOT in [-1, 1]! (This was the bug)
+
+DCT keep= 3:
+  MSE: 0.006870 ± 0.011199
+  Tokens: 21.0
+  Compression: 3.33x
+Fitted tokenizer on 4370 actions
+  Action range: [-1.0100, 1.0151]
+  DCT Coeff range: [-3.2526, 3.2336]
+  → DC component is NOT in [-1, 1]! (This was the bug)
+
+DCT keep= 4:
+  MSE: 0.004314 ± 0.007384
+  Tokens: 28.0
+  Compression: 2.50x
+Fitted tokenizer on 4370 actions
+  Action range: [-1.0100, 1.0151]
+  DCT Coeff range: [-3.2526, 3.2336]
+  → DC component is NOT in [-1, 1]! (This was the bug)
+
+DCT keep= 6:
+  MSE: 0.002105 ± 0.003501
+  Tokens: 42.0
+  Compression: 1.67x
+Fitted tokenizer on 4370 actions
+  Action range: [-1.0100, 1.0151]
+  DCT Coeff range: [-3.2526, 3.2336]
+  → DC component is NOT in [-1, 1]! (This was the bug)
+
+DCT keep= 8:
+  MSE: 0.000953 ± 0.001670
+  Tokens: 56.0
+  Compression: 1.25x
+Fitted tokenizer on 4370 actions
+  Action range: [-1.0100, 1.0151]
+  DCT Coeff range: [-3.2526, 3.2336]
+  → DC component is NOT in [-1, 1]! (This was the bug)
+
+DCT keep=10:
+  MSE: 0.000019 ± 0.000004
+  Tokens: 70.0
+  Compression: 1.00x
+
+📊 Plot saved to dct_compression_analysis.png
+
+================================================================================
+SUMMARY
+================================================================================
+
+✅ Optimal setting: Keep 3 DCT coefficients
+   MSE: 0.006870 ± 0.011199
+   Compression: 3.33x
+   Tokens per chunk: 21.0
+
+🎯 Best compression with excellent MSE (<0.01):
+   Keep 3 coefficients
+   MSE: 0.006870
+   Compression: 3.33x
+   → Autoregressive decoding could be 3.3x faster!
+
+================================================================================
+NEXT STEPS
+================================================================================
+✅ DCT compression proof of concept complete!
+
+Potential next steps:
+  1. Add BPE (Byte-Pair Encoding) to further compress tokens
+  2. Train an autoregressive model to predict these tokens
+  3. Implement Residual Speculative Decoding
+  4. Analyze task-aware compression (different settings for reach vs grasp)
+================================================================================
+
+sys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute
