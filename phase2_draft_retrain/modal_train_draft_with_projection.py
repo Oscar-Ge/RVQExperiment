@@ -28,6 +28,14 @@ from typing import List, Dict, Tuple
 import time
 
 # ============================================================
+# Import Robust RFSQ from Phase 1 Improved
+# ============================================================
+# This will be available in Modal environment after adding the repo as local_dir
+# For now, we define a placeholder import that agent will configure
+# sys.path.insert(0, '/root/RVQExperiment')
+# from phase1_improved.rfsq_robust import ActionRFSQAE
+
+# ============================================================
 # Modal Setup
 # ============================================================
 app = modal.App("draft-model-training-with-projection")
@@ -74,6 +82,10 @@ train_image = (
         "MUJOCO_GL": "osmesa",
     })
     .add_local_dir(sdk_path, remote_path="/root/src")
+    # Add RVQExperiment repo for accessing Robust RFSQ
+    .run_commands(
+        "mkdir -p /root/RVQExperiment",
+    )
 )
 
 
@@ -190,72 +202,12 @@ class RFSQDraftModelWithProjection(nn.Module):
 
 
 # ============================================================
-# RFSQ Components (for encoding actions)
+# RFSQ Components - Now using Robust RFSQ from Phase 1 Improved
 # ============================================================
-
-class STEQuantizer(nn.Module):
-    """Straight-Through Estimator Quantizer"""
-
-    def __init__(self, num_levels=7):
-        super().__init__()
-        self.num_levels = num_levels
-        self.register_buffer('boundaries', torch.linspace(-1, 1, num_levels))
-
-    def forward(self, z):
-        dist = torch.abs(z.unsqueeze(-1) - self.boundaries.unsqueeze(0).unsqueeze(0))
-        indices = torch.argmin(dist, dim=-1)
-        z_q = self.boundaries[indices]
-        z_q_out = z + (z_q - z).detach()
-        return z_q_out, indices
-
-
-class RFSQBlock(nn.Module):
-    """Residual Finite Scalar Quantization Block"""
-
-    def __init__(self, num_layers=8, num_levels=7):
-        super().__init__()
-        self.num_levels = num_levels
-        self.layers = nn.ModuleList([
-            STEQuantizer(num_levels=num_levels) for _ in range(num_layers)
-        ])
-
-    def forward(self, z):
-        residual = z
-        quantized_sum = 0
-        all_indices = []
-        for layer in self.layers:
-            z_q, indices = layer(residual)
-            quantized_sum = quantized_sum + z_q
-            residual = residual - z_q
-            all_indices.append(indices)
-        codes = torch.stack(all_indices, dim=-1)
-        return quantized_sum, codes
-
-
-class ActionRFSQAE(nn.Module):
-    """Action RFSQ AutoEncoder (Phase 1 trained)"""
-
-    def __init__(self, action_dim=7, hidden_dim=16, num_layers=8, num_levels=7):
-        super().__init__()
-        self.hidden_dim = hidden_dim
-        self.encoder = nn.Sequential(
-            nn.Linear(action_dim, 64),
-            nn.Mish(),
-            nn.Linear(64, hidden_dim),
-            nn.Tanh()
-        )
-        self.rfsq = RFSQBlock(num_layers=num_layers, num_levels=num_levels)
-        self.decoder = nn.Sequential(
-            nn.Linear(hidden_dim, 64),
-            nn.Mish(),
-            nn.Linear(64, action_dim)
-        )
-
-    def forward(self, x):
-        z = self.encoder(x)
-        z_quantized, codes = self.rfsq(z)
-        x_recon = self.decoder(z_quantized)
-        return x_recon, codes
+# ❌ Deleted Naive RFSQ (STEQuantizer, RFSQBlock, ActionRFSQAE)
+# ✅ Will import Robust RFSQ at runtime in collect_training_data()
+#
+# See MIGRATION_TO_ROBUST_RFSQ.md for details
 
 
 # ============================================================
@@ -310,15 +262,36 @@ def collect_training_data(num_episodes: int = 200):
     openvla.eval()
     print("   ✅ OpenVLA loaded")
 
-    # 2. Load RFSQ Encoder (frozen)
-    print("\n2️⃣ Loading RFSQ Encoder (frozen)...")
-    rfsq_encoder = ActionRFSQAE(action_dim=7, hidden_dim=16, num_layers=8, num_levels=7)
-    rfsq_checkpoint = torch.load("/models/rfsq_best.pt", map_location=device, weights_only=False)
+    # 2. Load RFSQ Encoder (frozen) - ✅ Now using Robust RFSQ!
+    print("\n2️⃣ Loading Robust RFSQ Encoder (frozen)...")
+
+    # Import Robust RFSQ from Phase 1 Improved
+    # Agent: Upload phase1_improved folder to Modal volume or add as local_dir
+    # For now, agent should ensure the file is accessible
+    import sys
+    sys.path.insert(0, '/root/RVQExperiment')  # Adjust path as needed
+    from phase1_improved.rfsq_robust import ActionRFSQAE
+
+    rfsq_encoder = ActionRFSQAE(
+        action_dim=7,
+        hidden_dim=16,
+        num_layers=8,
+        num_levels=7,
+        use_layernorm=True,  # ✅ Enable LayerNorm strategy!
+    )
+
+    # Load checkpoint
+    # Agent: Use /models/rfsq_robust_best.pt if Robust RFSQ is trained
+    #        Otherwise use /models/rfsq_best.pt (Naive) temporarily
+    rfsq_checkpoint_path = "/models/rfsq_robust_best.pt"  # ✅ Robust version
+    # rfsq_checkpoint_path = "/models/rfsq_best.pt"  # ❌ Fallback to Naive if Robust not ready
+
+    rfsq_checkpoint = torch.load(rfsq_checkpoint_path, map_location=device, weights_only=False)
     state_dict = rfsq_checkpoint.get('model', rfsq_checkpoint.get('model_state_dict', rfsq_checkpoint))
     rfsq_encoder.load_state_dict(state_dict)
     rfsq_encoder = rfsq_encoder.to(device)
     rfsq_encoder.eval()
-    print("   ✅ RFSQ Encoder loaded")
+    print(f"   ✅ Robust RFSQ Encoder loaded from {rfsq_checkpoint_path}")
 
     # 3. Setup LIBERO
     print("\n3️⃣ Setting up LIBERO...")

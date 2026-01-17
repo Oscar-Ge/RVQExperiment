@@ -146,105 +146,27 @@ def run_libero_evaluation(
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(f"   Device: {device}")
 
-        # Load RFSQ Decoder (from Phase 1)
-        rfsq_decoder_path = "/models/rfsq_autoencoder.pt"
-        print(f"\n   Loading RFSQ Decoder from {rfsq_decoder_path}")
+        # ============================================================
+        # Load RFSQ Decoder - ✅ Now using Robust RFSQ from Phase 1 Improved!
+        # ============================================================
+        rfsq_decoder_path = "/models/rfsq_robust_best.pt"  # ✅ Use Robust version
+        # rfsq_decoder_path = "/models/rfsq_autoencoder.pt"  # ❌ Old Naive version
+        print(f"\n   Loading Robust RFSQ Decoder from {rfsq_decoder_path}")
 
-        # Define RFSQ components (matching Phase 1)
-        class STEQuantizer(nn.Module):
-            def __init__(self, num_levels=7):
-                super().__init__()
-                self.num_levels = num_levels
-                self.register_buffer('boundaries', torch.linspace(-1, 1, num_levels))
+        # ❌ Deleted Naive RFSQ components (STEQuantizer, RFSQBlock, ActionRFSQAE)
+        # ✅ Import Robust RFSQ from Phase 1 Improved
+        import sys
+        sys.path.insert(0, '/root/RVQExperiment')  # Agent: Adjust path if needed
+        from phase1_improved.rfsq_robust import ActionRFSQAE
 
-            def forward(self, z):
-                dist = torch.abs(z.unsqueeze(-1) - self.boundaries.unsqueeze(0).unsqueeze(0))
-                indices = torch.argmin(dist, dim=-1)
-                z_q = self.boundaries[indices]
-                z_q_out = z + (z_q - z).detach()
-                return z_q_out, indices
-
-        class RFSQBlock(nn.Module):
-            def __init__(self, num_layers=8, num_levels=7):
-                super().__init__()
-                self.num_levels = num_levels
-                self.layers = nn.ModuleList([
-                    STEQuantizer(num_levels=num_levels) for _ in range(num_layers)
-                ])
-
-            def forward(self, z):
-                residual = z
-                quantized_sum = 0
-                all_indices = []
-                for layer in self.layers:
-                    z_q, indices = layer(residual)
-                    quantized_sum = quantized_sum + z_q
-                    residual = residual - z_q
-                    all_indices.append(indices)
-                codes = torch.stack(all_indices, dim=-1)
-                return quantized_sum, codes
-
-            def decode_from_indices(self, indices):
-                """Decode from indices back to continuous latent."""
-                # indices: [Batch, Chunk, Action_Dim, Num_Layers]
-                batch_size, chunk_len, action_dim, num_layers = indices.shape
-
-                # Reconstruct from layers
-                reconstruction = torch.zeros(batch_size, chunk_len, action_dim, device=indices.device)
-                for layer_idx in range(num_layers):
-                    layer_indices = indices[:, :, :, layer_idx]  # [B, C, A]
-                    layer_values = self.layers[layer_idx].boundaries[layer_indices]
-                    reconstruction = reconstruction + layer_values
-
-                return reconstruction
-
-        class ActionRFSQAE(nn.Module):
-            def __init__(self, action_dim=7, hidden_dim=16, num_layers=8, num_levels=7):
-                super().__init__()
-                self.encoder = nn.Sequential(
-                    nn.Linear(action_dim, 64),
-                    nn.Mish(),
-                    nn.Linear(64, hidden_dim),
-                    nn.Tanh()
-                )
-                self.rfsq = RFSQBlock(num_layers=num_layers, num_levels=num_levels)
-                self.decoder = nn.Sequential(
-                    nn.Linear(hidden_dim, 64),
-                    nn.Mish(),
-                    nn.Linear(64, action_dim)
-                )
-                self.num_levels = num_levels
-
-            def forward(self, x):
-                z = self.encoder(x)
-                z_quantized, codes = self.rfsq(z)
-                x_recon = self.decoder(z_quantized)
-                return x_recon, codes
-
-            def decode_from_indices(self, indices):
-                """Decode RFSQ indices to continuous actions."""
-                # indices: [Batch, Chunk, Action_Dim, Num_Layers]
-                batch_size, chunk_len, action_dim, num_layers = indices.shape
-
-                # Reconstruct latent from RFSQ indices
-                z_reconstructed = self.rfsq.decode_from_indices(indices)
-
-                # Reshape for decoder: [B, C, A] -> [B*C, A]
-                z_flat = z_reconstructed.view(-1, action_dim)
-
-                # Pass through decoder to get actions
-                # Note: decoder expects hidden_dim, but we have action_dim
-                # This is a mismatch - we need to handle this carefully
-                # For now, assume we're passing the right shape
-                actions_flat = self.decoder(z_flat)
-
-                # Reshape back: [B*C, A] -> [B, C, A]
-                actions = actions_flat.view(batch_size, chunk_len, action_dim)
-
-                return actions
-
-        # Load RFSQ model
-        rfsq_model = ActionRFSQAE(action_dim=7, hidden_dim=16, num_layers=8, num_levels=7)
+        # Create Robust RFSQ model
+        rfsq_model = ActionRFSQAE(
+            action_dim=7,
+            hidden_dim=16,
+            num_layers=8,
+            num_levels=7,
+            use_layernorm=True,  # ✅ Enable LayerNorm strategy!
+        )
         if Path(rfsq_decoder_path).exists():
             checkpoint = torch.load(rfsq_decoder_path, map_location=device)
             rfsq_model.load_state_dict(checkpoint['model_state_dict'])
