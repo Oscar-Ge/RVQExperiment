@@ -267,7 +267,10 @@ def generate_phase1_checkpoint(output_dir: Path, use_layernorm: bool = True):
     # Initialize with reasonable values
     for name, param in model.named_parameters():
         if 'weight' in name:
-            nn.init.xavier_uniform_(param)
+            if param.dim() >= 2:
+                nn.init.xavier_uniform_(param)
+            else:
+                nn.init.ones_(param)  # For 1D weights like LayerNorm
         elif 'bias' in name:
             nn.init.zeros_(param)
 
@@ -314,7 +317,10 @@ def generate_phase2_draft_checkpoint(output_dir: Path):
     # Initialize
     for name, param in model.named_parameters():
         if 'weight' in name:
-            nn.init.xavier_uniform_(param)
+            if param.dim() >= 2:
+                nn.init.xavier_uniform_(param)
+            else:
+                nn.init.ones_(param)  # For 1D weights like LayerNorm
         elif 'bias' in name:
             nn.init.zeros_(param)
 
@@ -365,7 +371,10 @@ def generate_phase2_main_checkpoint(output_dir: Path):
     # Initialize
     for name, param in model.named_parameters():
         if 'weight' in name:
-            nn.init.xavier_uniform_(param)
+            if param.dim() >= 2:
+                nn.init.xavier_uniform_(param)
+            else:
+                nn.init.ones_(param)  # For 1D weights like LayerNorm
         elif 'bias' in name:
             nn.init.zeros_(param)
 
