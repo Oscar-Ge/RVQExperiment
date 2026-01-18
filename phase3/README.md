@@ -10,10 +10,12 @@
 
 ```
 phase3/
+├── WHAT_IS_PHASE3.md                    🎯 Phase 3 完整说明（给 Agent）
 ├── modal_phase3_libero_eval_UPDATED.py  ⭐ 完整更新的评估脚本
-├── PHASE3_READY_TO_RUN.md               📋 准备就绪总结 (START HERE!)
+├── PHASE3_READY_TO_RUN.md               📋 准备就绪总结
 ├── PHASE3_UPDATES_FROM_PHASE2.md        📖 详细更新说明
-└── QUICK_START_PHASE3.md                🚀 快速开始指南
+├── QUICK_START_PHASE3.md                🚀 快速开始指南
+└── README.md                            📖 本文件（目录导航）
 ```
 
 ---
@@ -72,12 +74,18 @@ Phase 3 脚本已根据 Phase 2 实际结果完全更新：
 
 ## 📖 文档说明
 
-| 文件 | 用途 |
-|------|------|
-| **PHASE3_READY_TO_RUN.md** | 总览和 checklist |
-| **QUICK_START_PHASE3.md** | 3 步快速开始 |
-| **PHASE3_UPDATES_FROM_PHASE2.md** | 详细的更新说明和 Phase 2 错误总结 |
-| **modal_phase3_libero_eval_UPDATED.py** | 可运行的评估脚本 |
+| 文件 | 用途 | 推荐 |
+|------|------|------|
+| **WHAT_IS_PHASE3.md** | Phase 3 完整说明（给 Agent） | 🔴 **必读** |
+| **PHASE3_READY_TO_RUN.md** | 总览和 checklist | 🔴 **先看** |
+| **QUICK_START_PHASE3.md** | 3 步快速开始 | 🟡 参考 |
+| **PHASE3_UPDATES_FROM_PHASE2.md** | 详细的更新说明和 Phase 2 错误总结 | 🟡 深入 |
+| **modal_phase3_libero_eval_UPDATED.py** | 可运行的评估脚本 | 🔴 **运行** |
+
+**阅读顺序（给 Agent）**：
+1. 🎯 `WHAT_IS_PHASE3.md` - 理解 Phase 3 要做什么
+2. 📋 `PHASE3_READY_TO_RUN.md` - 准备运行
+3. 🚀 运行脚本测试
 
 ---
 
