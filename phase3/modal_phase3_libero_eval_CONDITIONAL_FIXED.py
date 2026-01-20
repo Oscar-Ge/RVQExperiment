@@ -996,13 +996,17 @@ def run_libero_evaluation(
         # ============================================================
         # Run Evaluation
         # ============================================================
-        print(f"\n🎯 Starting evaluation ({num_trials} trials per task)...\n")
+        # 🔧 QUICK TEST MODE: Only test first task, 1 trial
+        print(f"\n🎯 Starting QUICK TEST evaluation (Task 0, 1 trial only)...\n")
+        print(f"   ⚠️  This is a QUICK TEST to verify code works!")
+        print(f"   ⚠️  For full evaluation, modify code to run all {num_tasks} tasks with {num_trials} trials each\n")
 
         total_episodes = 0
         total_successes = 0
         task_results = []
 
-        for task_id in range(num_tasks):
+        # 🔧 MODIFIED: Only run first task (task_id = 0)
+        for task_id in range(1):  # Changed from range(num_tasks)
             task = task_suite_obj.get_task(task_id)
             task_description = task.language
 
@@ -1023,7 +1027,8 @@ def run_libero_evaluation(
             task_successes = 0
             task_episodes = 0
 
-            for trial_idx in range(min(num_trials, len(init_states))):
+            # 🔧 MODIFIED: Only run 1 trial instead of num_trials
+            for trial_idx in range(1):  # Changed from range(min(num_trials, len(init_states)))
                 task_episodes += 1
                 total_episodes += 1
 
