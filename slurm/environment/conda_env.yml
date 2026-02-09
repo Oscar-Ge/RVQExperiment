@@ -1,0 +1,52 @@
+name: rvq_training
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pytorch=2.2.0
+  - torchvision=0.17.0
+  - pytorch-cuda=12.1
+  - numpy<2
+  - scipy
+  - matplotlib
+  - pandas
+  - tqdm
+  - pip
+  - h5py
+  - pip:
+    # Core ML libraries
+    - transformers==4.40.1
+    - timm==0.9.10
+    - tokenizers==0.19.1
+    - accelerate
+    - peft
+    - bitsandbytes
+    - einops
+    - sentencepiece
+    - protobuf
+    - huggingface_hub
+
+    # OpenVLA (will install from GitHub)
+    - git+https://github.com/moojink/openvla-oft.git
+
+    # LIBERO and robotics dependencies
+    - robosuite==1.4.0
+    - mujoco
+    - dm-control
+    - bddl
+    - easydict
+    - cloudpickle
+    - gym
+    - gymnasium
+
+    # Utilities
+    - json-numpy
+    - jsonlines
+    - PyOpenGL
+    - PyOpenGL_accelerate
+    - imageio
+    - imageio-ffmpeg
+    - pillow

@@ -37,6 +37,9 @@ wheels/
 # Modal
 .modal/
 
+# Claude Code
+.claude/
+
 # External dependencies (handled by Modal)
 LIBERO/
 
@@ -46,10 +49,13 @@ LIBERO/
 *.pt
 *.pth
 *.ckpt
-data/
-datasets/
-logs/
-checkpoints/
+/data/
+/datasets/
+/logs/
+/checkpoints/
+/models/
+/results/
+.hf_cache/
 
 # OS
 .DS_Store
